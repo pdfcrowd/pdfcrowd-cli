@@ -1,0 +1,2 @@
+include release.json README.md LICENSE makefile package_download.py
+recursive-include src *.py *.json

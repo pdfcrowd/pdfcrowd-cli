@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "sdk_minimum": "7.0.0",
+  "sdk_maximum": "7.1.0",
+  "requires_python": ">=3.8",
+  "launcher_owner": "pdfcrowd-cli"
+}
