@@ -283,42 +283,19 @@ def save_pair(path, pair):
 
 def authentication(command, arguments, catalog, program=None):
     program = program or command
-    usage = (f'Usage: {program} auth ACTION\n\n'
-             'Commands\n'
-             '  login [--non-interactive]  Save your username and API key\n'
-             '  status                    Show which credentials will be used\n'
-             '  logout                    Remove saved credentials\n\n'
-             'Credentials are shared by all converter commands.\n'
-             f'More help: {program} auth login --help\n')
+    from .help import command_detail
+    actions = {name.split(' ', 1)[1] for name in catalog['commands']
+               if name.startswith('auth ')}
     if not arguments:
-        return usage
+        return command_detail('auth', catalog, program, command) + '\n'
     action = arguments[0]
     extra = arguments[1:]
     if any(flag in arguments for flag in ('--help', '-h')):
-        if action not in ('login', 'status', 'logout'):
-            return usage
-        auth = catalog['authentication']
-        scope = ' [--non-interactive]' if action == 'login' else ''
+        name = f'auth {action}' if action in actions else 'auth'
         _, path = paths(command)
-        descriptions = {
-            'login': (
-                'Save your PDFCrowd username and API key for all converters.\n'
-                'The API-key prompt hides your input.\n\n'
-                'For --non-interactive, set both PDFCROWD_USERNAME and\n'
-                'PDFCROWD_API_KEY. Missing credentials cause an error.\n'
-                f'{auth["hint"]}\nAPI key: {auth["api_key_url"]}\n'),
-            'status': (
-                'Show which credentials will be used: environment\n'
-                'variables, saved credentials, or the demo account.\n'
-                'This reads local settings; it does not verify the account\n'
-                'with PDFCrowd.\n'),
-            'logout': (
-                'Remove the saved account for all converter commands.\n'
-                'PDFCROWD_USERNAME and PDFCROWD_API_KEY still apply if set.\n'),
-        }
-        return (f'Usage: {program} auth {action}{scope}\n\n'
-                f'{descriptions[action]}\nShared credentials file: {path}\n')
-    if action not in ('login', 'status', 'logout'):
+        return (command_detail(name, catalog, program, command) +
+                f'\n\nShared credentials file: {path}\n')
+    if action not in actions:
         raise CLIError('Unknown authentication action. '
                        f'Run {program} auth --help.')
     if extra and extra != ['--non-interactive']:

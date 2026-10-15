@@ -1,6 +1,10 @@
 {
   "authentication": {
     "api_key_url": "https://pdfcrowd.com/user/account/",
+    "details": [
+      "Both environment variables are required together. An incomplete or invalid selected credential source causes an error; the CLI does not fall back to demo credentials.",
+      "Conversion commands never prompt for credentials."
+    ],
     "environment": [
       "PDFCROWD_USERNAME",
       "PDFCROWD_API_KEY"
@@ -11,6 +15,11 @@
       "credentials_file",
       "demo"
     ],
+    "sources": {
+      "credentials_file": "The account saved by auth login.",
+      "demo": "Demo credentials, when neither source is configured.",
+      "environment": "The PDFCROWD_USERNAME and PDFCROWD_API_KEY environment variables, when set."
+    },
     "website_url": "https://pdfcrowd.com/"
   },
   "command_options": [
@@ -127,10 +136,9 @@
       "usage": "{command} --show-config [options]"
     },
     {
-      "description": "Log in using environment variables, without prompting.",
+      "description": "Require environment credentials when saving an account with auth login; never prompt.",
       "details": [
-        "Set both PDFCROWD_USERNAME and PDFCROWD_API_KEY before running this command. The account is saved for all converters.",
-        "This flag applies only to auth login. Conversions never prompt for credentials."
+        "Set both PDFCROWD_USERNAME and PDFCROWD_API_KEY before running this command. The account is saved for all converters. Missing credentials cause an error."
       ],
       "flags": [
         "--non-interactive"
@@ -153,6 +161,77 @@
       "usage": "{command} help --json"
     }
   ],
+  "commands": {
+    "auth": {
+      "arguments": [
+        {
+          "description": "Choose login, status, or logout.",
+          "name": "ACTION"
+        }
+      ],
+      "description": "Manage credentials shared by all converter commands.",
+      "root_usage": "pdfcrowd auth ACTION",
+      "topic": "authentication",
+      "usage": "{command} auth ACTION"
+    },
+    "auth login": {
+      "description": "Save your PDFCrowd username and API key for all converter commands.",
+      "details": [
+        "Use both credential environment variables when set; otherwise prompt in an interactive terminal. The API-key prompt hides your input.",
+        "In a script, use --non-interactive to require environment credentials without prompting. This saves the account; it does not perform a conversion."
+      ],
+      "root_usage": "pdfcrowd auth login [--non-interactive]",
+      "topic": "authentication",
+      "usage": "{command} auth login [--non-interactive]"
+    },
+    "auth logout": {
+      "description": "Remove the saved account for all converter commands.",
+      "details": [
+        "Credential environment variables still apply when set."
+      ],
+      "root_usage": "pdfcrowd auth logout",
+      "topic": "authentication",
+      "usage": "{command} auth logout"
+    },
+    "auth status": {
+      "description": "Show which credentials will be used without revealing the API key.",
+      "details": [
+        "This reads local settings; it does not verify the account with PDFCrowd."
+      ],
+      "root_usage": "pdfcrowd auth status",
+      "topic": "authentication",
+      "usage": "{command} auth status"
+    },
+    "help": {
+      "arguments": [
+        {
+          "description": "Omit the argument for an overview. Supply one topic, option name (with or without --), or conversion category ID.",
+          "name": "TOPIC|OPTION|CATEGORY"
+        }
+      ],
+      "description": "Show offline help for this converter.",
+      "details": [
+        "Help does not load saved settings or credentials and does not contact the service."
+      ],
+      "examples": [
+        "{command} help all",
+        "{command} help categories",
+        "{command} help --output"
+      ],
+      "root_usage": "pdfcrowd help CONVERTER [TOPIC|OPTION|CATEGORY]",
+      "topic": "help",
+      "topics": {
+        "all": "List every option.",
+        "authentication": "Set up your PDFCrowd account.",
+        "categories": "List help topics and conversion option groups.",
+        "configuration": "Save and load conversion defaults.",
+        "exit-codes": "Check whether a command succeeded.",
+        "input-output": "Read inputs and save results.",
+        "syntax": "Explain how to supply arguments."
+      },
+      "usage": "{command} help [TOPIC|OPTION|CATEGORY]"
+    }
+  },
   "converters": {
     "html2image": {
       "demo_notice": "Demo output contains PDFCrowd watermarks.",
@@ -604,46 +683,6 @@
           "unsupported": {
             "flag": "-disable-remote-fonts",
             "replacement": "--disable-remote-fonts=true"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [],
-              "default": "false",
-              "description": "Set to true to use a mobile user agent.",
-              "name": "value",
-              "type": "bool"
-            }
-          ],
-          "category": {
-            "id": "general-options",
-            "name": "General Options"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--converter-user-agent",
-                "name": "--converter-user-agent"
-              }
-            ]
-          },
-          "description": "Use a mobile user agent when making requests to the source URL.",
-          "flags": [
-            "--use-mobile-user-agent"
-          ],
-          "hidden": false,
-          "name": "use-mobile-user-agent",
-          "repeatable": false,
-          "sdk_method": "setUseMobileUserAgent",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-use-mobile-user-agent",
-            "replacement": "--use-mobile-user-agent=true"
           },
           "warnings": ""
         },
@@ -2124,15 +2163,10 @@
                 {
                   "description": "Version 18.10.",
                   "value": "18.10"
-                },
-                {
-                  "description": "Version 20.10 is used.",
-                  "value": "latest"
                 }
               ],
-              "constraints": [
-                "Allowed values are 24.04, 20.10, 18.10, latest."
-              ],
+              "choices_only": true,
+              "constraints": [],
               "default": "24.04",
               "description": "The version identifier.",
               "name": "version",
@@ -2199,7 +2233,7 @@
             {
               "allowed_values": [],
               "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
+              "default": "pdfcrowd_cli_client/1.1.0 (https://pdfcrowd.com)",
               "description": "The user agent string.",
               "name": "agent",
               "type": "str"
@@ -2211,7 +2245,7 @@
           },
           "configuration": true,
           "deprecated": null,
-          "description": "Specify the User-Agent HTTP header that the client library will use when interacting with the API.",
+          "description": "Specify the User-Agent HTTP header the CLI sends to the PDFCrowd API.",
           "flags": [
             "--client-user-agent"
           ],
@@ -2224,46 +2258,6 @@
           "unsupported": {
             "flag": "-client-user-agent",
             "replacement": "--client-user-agent"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
-              "description": "The user agent string.",
-              "name": "agent",
-              "type": "str"
-            }
-          ],
-          "category": {
-            "id": "api-client-options",
-            "name": "API Client Options"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--client-user-agent",
-                "name": "--client-user-agent"
-              }
-            ]
-          },
-          "description": "Set a custom user agent HTTP header. It can be useful if you are behind a proxy or a firewall.",
-          "flags": [
-            "--user-agent"
-          ],
-          "hidden": false,
-          "name": "user-agent",
-          "repeatable": false,
-          "sdk_method": "setUserAgent",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-user-agent",
-            "replacement": "--user-agent"
           },
           "warnings": ""
         },
@@ -2308,7 +2302,7 @@
           },
           "configuration": false,
           "deprecated": null,
-          "description": "Specify an HTTP proxy that the API client library will use to connect to the internet.",
+          "description": "Specify an HTTP proxy the CLI uses to connect to the PDFCrowd API.",
           "flags": [
             "--proxy"
           ],
@@ -2427,7 +2421,8 @@
         }
       ],
       "reference_url": "https://pdfcrowd.com/api/html-to-image-command-line/ref/",
-      "sdk_class": "HtmlToImageClient"
+      "sdk_class": "HtmlToImageClient",
+      "usage": "html2image [options] SOURCE"
     },
     "html2pdf": {
       "demo_notice": "Demo output contains PDFCrowd watermarks.",
@@ -4123,46 +4118,6 @@
         {
           "arguments": [
             {
-              "allowed_values": [],
-              "constraints": [],
-              "default": "false",
-              "description": "Set to true to use a mobile user agent.",
-              "name": "value",
-              "type": "bool"
-            }
-          ],
-          "category": {
-            "id": "general-options",
-            "name": "General Options"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--converter-user-agent",
-                "name": "--converter-user-agent"
-              }
-            ]
-          },
-          "description": "Use a mobile user agent when making requests to the source URL.",
-          "flags": [
-            "--use-mobile-user-agent"
-          ],
-          "hidden": false,
-          "name": "use-mobile-user-agent",
-          "repeatable": false,
-          "sdk_method": "setUseMobileUserAgent",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-use-mobile-user-agent",
-            "replacement": "--use-mobile-user-agent=true"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
               "allowed_values": [
                 {
                   "description": "All iframes are loaded.",
@@ -5006,268 +4961,6 @@
           "unsupported": {
             "flag": "-readability-enhancements",
             "replacement": "--readability-enhancements"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [
-                "The accepted range is 96-65000."
-              ],
-              "default": null,
-              "description": "",
-              "name": "width",
-              "type": "int"
-            }
-          ],
-          "category": {
-            "id": "print-resolution",
-            "name": "Print Resolution"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--content-viewport-width",
-                "name": "--content-viewport-width"
-              }
-            ]
-          },
-          "description": "Set the viewport width in pixels.",
-          "flags": [
-            "--viewport-width"
-          ],
-          "hidden": false,
-          "name": "viewport-width",
-          "repeatable": false,
-          "sdk_method": "setViewportWidth",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-viewport-width",
-            "replacement": "--viewport-width"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [
-                "Must be a positive integer."
-              ],
-              "default": null,
-              "description": "",
-              "name": "height",
-              "type": "int"
-            }
-          ],
-          "category": {
-            "id": "print-resolution",
-            "name": "Print Resolution"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--content-viewport-height",
-                "name": "--content-viewport-height"
-              }
-            ]
-          },
-          "description": "Set the viewport height in pixels.",
-          "flags": [
-            "--viewport-height"
-          ],
-          "hidden": false,
-          "name": "viewport-height",
-          "repeatable": false,
-          "sdk_method": "setViewportHeight",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-viewport-height",
-            "replacement": "--viewport-height"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [
-                "The accepted range is 96-65000."
-              ],
-              "default": null,
-              "description": "Set the viewport width in pixels.",
-              "name": "width",
-              "type": "int"
-            },
-            {
-              "allowed_values": [],
-              "constraints": [
-                "Must be a positive integer."
-              ],
-              "default": null,
-              "description": "Set the viewport height in pixels.",
-              "name": "height",
-              "type": "int"
-            }
-          ],
-          "category": {
-            "id": "print-resolution",
-            "name": "Print Resolution"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--content-viewport-width",
-                "name": "--content-viewport-width"
-              },
-              {
-                "id": "--content-viewport-height",
-                "name": "--content-viewport-height"
-              }
-            ]
-          },
-          "description": "Set the viewport size. Use to control responsive design rendering. Deprecated - use content_viewport_width and content_viewport_height instead.",
-          "flags": [
-            "--viewport"
-          ],
-          "hidden": false,
-          "name": "viewport",
-          "repeatable": false,
-          "sdk_method": "setViewport",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-viewport",
-            "replacement": "--viewport"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [
-                {
-                  "description": "The mode based on the standard browser print functionality.",
-                  "value": "default"
-                },
-                {
-                  "description": "Adapts the rendering according to the specified viewport width, influencing the @media (min-width) and @media (max-width) CSS properties. Use this mode to preview different responsive designs of a web page, such as mobile or desktop views, by choosing the viewport size.",
-                  "value": "viewport"
-                }
-              ],
-              "constraints": [
-                "Allowed values are default, viewport."
-              ],
-              "default": null,
-              "description": "The rendering mode.",
-              "name": "mode",
-              "type": "str"
-            }
-          ],
-          "category": {
-            "id": "print-resolution",
-            "name": "Print Resolution"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--content-viewport-width",
-                "name": "--content-viewport-width"
-              }
-            ]
-          },
-          "description": "Set the rendering mode of the page, allowing control over how content is displayed.",
-          "flags": [
-            "--rendering-mode"
-          ],
-          "hidden": false,
-          "name": "rendering-mode",
-          "repeatable": false,
-          "sdk_method": "setRenderingMode",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-rendering-mode",
-            "replacement": "--rendering-mode"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [
-                {
-                  "description": "The mode based on the standard browser print functionality.",
-                  "value": "default"
-                },
-                {
-                  "description": "No smart scaling is performed.",
-                  "value": "disabled"
-                },
-                {
-                  "description": "The viewport width fits the print area width.",
-                  "value": "viewport-fit"
-                },
-                {
-                  "description": "The HTML contents width fits the print area width.",
-                  "value": "content-fit"
-                },
-                {
-                  "description": "The whole HTML contents fits the print area of a single page.",
-                  "value": "single-page-fit"
-                },
-                {
-                  "description": "The whole HTML contents fits the print area of a single page with respect to the page height/width ratio.",
-                  "value": "single-page-fit-ex"
-                },
-                {
-                  "description": "Scaling mode 1 is applied. Legacy scaling behavior for backward compatibility.",
-                  "value": "mode1"
-                }
-              ],
-              "constraints": [
-                "Allowed values are default, disabled, viewport-fit, content-fit, single-page-fit, single-page-fit-ex, mode1."
-              ],
-              "default": null,
-              "description": "The smart scaling mode.",
-              "name": "mode",
-              "type": "str"
-            }
-          ],
-          "category": {
-            "id": "print-resolution",
-            "name": "Print Resolution"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--content-fit-mode",
-                "name": "--content-fit-mode"
-              }
-            ]
-          },
-          "description": "Specify the scaling mode used for fitting the HTML contents to the print area.",
-          "flags": [
-            "--smart-scaling-mode"
-          ],
-          "hidden": false,
-          "name": "smart-scaling-mode",
-          "repeatable": false,
-          "sdk_method": "setSmartScalingMode",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-smart-scaling-mode",
-            "replacement": "--smart-scaling-mode"
           },
           "warnings": ""
         },
@@ -7624,15 +7317,10 @@
                 {
                   "description": "Version 18.10.",
                   "value": "18.10"
-                },
-                {
-                  "description": "Version 20.10 is used.",
-                  "value": "latest"
                 }
               ],
-              "constraints": [
-                "Allowed values are 24.04, 20.10, 18.10, latest."
-              ],
+              "choices_only": true,
+              "constraints": [],
               "default": "24.04",
               "description": "The version identifier.",
               "name": "version",
@@ -7699,7 +7387,7 @@
             {
               "allowed_values": [],
               "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
+              "default": "pdfcrowd_cli_client/1.1.0 (https://pdfcrowd.com)",
               "description": "The user agent string.",
               "name": "agent",
               "type": "str"
@@ -7711,7 +7399,7 @@
           },
           "configuration": true,
           "deprecated": null,
-          "description": "Specify the User-Agent HTTP header that the client library will use when interacting with the API.",
+          "description": "Specify the User-Agent HTTP header the CLI sends to the PDFCrowd API.",
           "flags": [
             "--client-user-agent"
           ],
@@ -7724,46 +7412,6 @@
           "unsupported": {
             "flag": "-client-user-agent",
             "replacement": "--client-user-agent"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
-              "description": "The user agent string.",
-              "name": "agent",
-              "type": "str"
-            }
-          ],
-          "category": {
-            "id": "api-client-options",
-            "name": "API Client Options"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--client-user-agent",
-                "name": "--client-user-agent"
-              }
-            ]
-          },
-          "description": "Set a custom user agent HTTP header. It can be useful if you are behind a proxy or a firewall.",
-          "flags": [
-            "--user-agent"
-          ],
-          "hidden": false,
-          "name": "user-agent",
-          "repeatable": false,
-          "sdk_method": "setUserAgent",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-user-agent",
-            "replacement": "--user-agent"
           },
           "warnings": ""
         },
@@ -7808,7 +7456,7 @@
           },
           "configuration": false,
           "deprecated": null,
-          "description": "Specify an HTTP proxy that the API client library will use to connect to the internet.",
+          "description": "Specify an HTTP proxy the CLI uses to connect to the PDFCrowd API.",
           "flags": [
             "--proxy"
           ],
@@ -7949,7 +7597,8 @@
         }
       ],
       "reference_url": "https://pdfcrowd.com/api/html-to-pdf-command-line/ref/",
-      "sdk_class": "HtmlToPdfClient"
+      "sdk_class": "HtmlToPdfClient",
+      "usage": "html2pdf [options] SOURCE"
     },
     "image2image": {
       "demo_notice": "Demo output contains PDFCrowd watermarks.",
@@ -9141,15 +8790,10 @@
                 {
                   "description": "Version 18.10.",
                   "value": "18.10"
-                },
-                {
-                  "description": "Version 20.10 is used.",
-                  "value": "latest"
                 }
               ],
-              "constraints": [
-                "Allowed values are 24.04, 20.10, 18.10, latest."
-              ],
+              "choices_only": true,
+              "constraints": [],
               "default": "24.04",
               "description": "The version identifier.",
               "name": "version",
@@ -9216,7 +8860,7 @@
             {
               "allowed_values": [],
               "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
+              "default": "pdfcrowd_cli_client/1.1.0 (https://pdfcrowd.com)",
               "description": "The user agent string.",
               "name": "agent",
               "type": "str"
@@ -9228,7 +8872,7 @@
           },
           "configuration": true,
           "deprecated": null,
-          "description": "Specify the User-Agent HTTP header that the client library will use when interacting with the API.",
+          "description": "Specify the User-Agent HTTP header the CLI sends to the PDFCrowd API.",
           "flags": [
             "--client-user-agent"
           ],
@@ -9241,46 +8885,6 @@
           "unsupported": {
             "flag": "-client-user-agent",
             "replacement": "--client-user-agent"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
-              "description": "The user agent string.",
-              "name": "agent",
-              "type": "str"
-            }
-          ],
-          "category": {
-            "id": "api-client-options",
-            "name": "API Client Options"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--client-user-agent",
-                "name": "--client-user-agent"
-              }
-            ]
-          },
-          "description": "Set a custom user agent HTTP header. It can be useful if you are behind a proxy or a firewall.",
-          "flags": [
-            "--user-agent"
-          ],
-          "hidden": false,
-          "name": "user-agent",
-          "repeatable": false,
-          "sdk_method": "setUserAgent",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-user-agent",
-            "replacement": "--user-agent"
           },
           "warnings": ""
         },
@@ -9325,7 +8929,7 @@
           },
           "configuration": false,
           "deprecated": null,
-          "description": "Specify an HTTP proxy that the API client library will use to connect to the internet.",
+          "description": "Specify an HTTP proxy the CLI uses to connect to the PDFCrowd API.",
           "flags": [
             "--proxy"
           ],
@@ -9444,7 +9048,8 @@
         }
       ],
       "reference_url": "https://pdfcrowd.com/api/image-to-image-command-line/ref/",
-      "sdk_class": "ImageToImageClient"
+      "sdk_class": "ImageToImageClient",
+      "usage": "image2image [options] SOURCE"
     },
     "image2pdf": {
       "demo_notice": "Demo output contains PDFCrowd watermarks.",
@@ -11626,15 +11231,10 @@
                 {
                   "description": "Version 18.10.",
                   "value": "18.10"
-                },
-                {
-                  "description": "Version 20.10 is used.",
-                  "value": "latest"
                 }
               ],
-              "constraints": [
-                "Allowed values are 24.04, 20.10, 18.10, latest."
-              ],
+              "choices_only": true,
+              "constraints": [],
               "default": "24.04",
               "description": "The version identifier.",
               "name": "version",
@@ -11701,7 +11301,7 @@
             {
               "allowed_values": [],
               "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
+              "default": "pdfcrowd_cli_client/1.1.0 (https://pdfcrowd.com)",
               "description": "The user agent string.",
               "name": "agent",
               "type": "str"
@@ -11713,7 +11313,7 @@
           },
           "configuration": true,
           "deprecated": null,
-          "description": "Specify the User-Agent HTTP header that the client library will use when interacting with the API.",
+          "description": "Specify the User-Agent HTTP header the CLI sends to the PDFCrowd API.",
           "flags": [
             "--client-user-agent"
           ],
@@ -11726,46 +11326,6 @@
           "unsupported": {
             "flag": "-client-user-agent",
             "replacement": "--client-user-agent"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
-              "description": "The user agent string.",
-              "name": "agent",
-              "type": "str"
-            }
-          ],
-          "category": {
-            "id": "api-client-options",
-            "name": "API Client Options"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--client-user-agent",
-                "name": "--client-user-agent"
-              }
-            ]
-          },
-          "description": "Set a custom user agent HTTP header. It can be useful if you are behind a proxy or a firewall.",
-          "flags": [
-            "--user-agent"
-          ],
-          "hidden": false,
-          "name": "user-agent",
-          "repeatable": false,
-          "sdk_method": "setUserAgent",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-user-agent",
-            "replacement": "--user-agent"
           },
           "warnings": ""
         },
@@ -11810,7 +11370,7 @@
           },
           "configuration": false,
           "deprecated": null,
-          "description": "Specify an HTTP proxy that the API client library will use to connect to the internet.",
+          "description": "Specify an HTTP proxy the CLI uses to connect to the PDFCrowd API.",
           "flags": [
             "--proxy"
           ],
@@ -11929,7 +11489,8 @@
         }
       ],
       "reference_url": "https://pdfcrowd.com/api/image-to-pdf-command-line/ref/",
-      "sdk_class": "ImageToPdfClient"
+      "sdk_class": "ImageToPdfClient",
+      "usage": "image2pdf [options] SOURCE"
     },
     "pdf2html": {
       "demo_notice": "Demo output replaces text with DEMO markers and watermarks images.",
@@ -12725,15 +12286,10 @@
                 {
                   "description": "Version 18.10.",
                   "value": "18.10"
-                },
-                {
-                  "description": "Version 20.10 is used.",
-                  "value": "latest"
                 }
               ],
-              "constraints": [
-                "Allowed values are 24.04, 20.10, 18.10, latest."
-              ],
+              "choices_only": true,
+              "constraints": [],
               "default": "24.04",
               "description": "The version identifier.",
               "name": "version",
@@ -12800,7 +12356,7 @@
             {
               "allowed_values": [],
               "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
+              "default": "pdfcrowd_cli_client/1.1.0 (https://pdfcrowd.com)",
               "description": "The user agent string.",
               "name": "agent",
               "type": "str"
@@ -12812,7 +12368,7 @@
           },
           "configuration": true,
           "deprecated": null,
-          "description": "Specify the User-Agent HTTP header that the client library will use when interacting with the API.",
+          "description": "Specify the User-Agent HTTP header the CLI sends to the PDFCrowd API.",
           "flags": [
             "--client-user-agent"
           ],
@@ -12825,46 +12381,6 @@
           "unsupported": {
             "flag": "-client-user-agent",
             "replacement": "--client-user-agent"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
-              "description": "The user agent string.",
-              "name": "agent",
-              "type": "str"
-            }
-          ],
-          "category": {
-            "id": "api-client-options",
-            "name": "API Client Options"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--client-user-agent",
-                "name": "--client-user-agent"
-              }
-            ]
-          },
-          "description": "Set a custom user agent HTTP header. It can be useful if you are behind a proxy or a firewall.",
-          "flags": [
-            "--user-agent"
-          ],
-          "hidden": false,
-          "name": "user-agent",
-          "repeatable": false,
-          "sdk_method": "setUserAgent",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-user-agent",
-            "replacement": "--user-agent"
           },
           "warnings": ""
         },
@@ -12909,7 +12425,7 @@
           },
           "configuration": false,
           "deprecated": null,
-          "description": "Specify an HTTP proxy that the API client library will use to connect to the internet.",
+          "description": "Specify an HTTP proxy the CLI uses to connect to the PDFCrowd API.",
           "flags": [
             "--proxy"
           ],
@@ -13050,7 +12566,8 @@
         }
       ],
       "reference_url": "https://pdfcrowd.com/api/pdf-to-html-command-line/ref/",
-      "sdk_class": "PdfToHtmlClient"
+      "sdk_class": "PdfToHtmlClient",
+      "usage": "pdf2html [options] SOURCE"
     },
     "pdf2image": {
       "demo_notice": "Demo output contains PDFCrowd watermarks.",
@@ -13746,7 +13263,7 @@
             {
               "allowed_values": [],
               "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
+              "default": "pdfcrowd_cli_client/1.1.0 (https://pdfcrowd.com)",
               "description": "The user agent string.",
               "name": "agent",
               "type": "str"
@@ -13758,7 +13275,7 @@
           },
           "configuration": true,
           "deprecated": null,
-          "description": "Specify the User-Agent HTTP header that the client library will use when interacting with the API.",
+          "description": "Specify the User-Agent HTTP header the CLI sends to the PDFCrowd API.",
           "flags": [
             "--client-user-agent"
           ],
@@ -13771,46 +13288,6 @@
           "unsupported": {
             "flag": "-client-user-agent",
             "replacement": "--client-user-agent"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
-              "description": "The user agent string.",
-              "name": "agent",
-              "type": "str"
-            }
-          ],
-          "category": {
-            "id": "api-client-options",
-            "name": "API Client Options"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--client-user-agent",
-                "name": "--client-user-agent"
-              }
-            ]
-          },
-          "description": "Set a custom user agent HTTP header. It can be useful if you are behind a proxy or a firewall.",
-          "flags": [
-            "--user-agent"
-          ],
-          "hidden": false,
-          "name": "user-agent",
-          "repeatable": false,
-          "sdk_method": "setUserAgent",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-user-agent",
-            "replacement": "--user-agent"
           },
           "warnings": ""
         },
@@ -13855,7 +13332,7 @@
           },
           "configuration": false,
           "deprecated": null,
-          "description": "Specify an HTTP proxy that the API client library will use to connect to the internet.",
+          "description": "Specify an HTTP proxy the CLI uses to connect to the PDFCrowd API.",
           "flags": [
             "--proxy"
           ],
@@ -13996,7 +13473,8 @@
         }
       ],
       "reference_url": "https://pdfcrowd.com/api/pdf-to-image-command-line/ref/",
-      "sdk_class": "PdfToImageClient"
+      "sdk_class": "PdfToImageClient",
+      "usage": "pdf2image [options] SOURCE"
     },
     "pdf2pdf": {
       "demo_notice": "Demo output contains PDFCrowd watermarks.",
@@ -15371,15 +14849,10 @@
                 {
                   "description": "Version 18.10.",
                   "value": "18.10"
-                },
-                {
-                  "description": "Version 20.10 is used.",
-                  "value": "latest"
                 }
               ],
-              "constraints": [
-                "Allowed values are 24.04, 20.10, 18.10, latest."
-              ],
+              "choices_only": true,
+              "constraints": [],
               "default": "24.04",
               "description": "The version identifier.",
               "name": "version",
@@ -15446,7 +14919,7 @@
             {
               "allowed_values": [],
               "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
+              "default": "pdfcrowd_cli_client/1.1.0 (https://pdfcrowd.com)",
               "description": "The user agent string.",
               "name": "agent",
               "type": "str"
@@ -15458,7 +14931,7 @@
           },
           "configuration": true,
           "deprecated": null,
-          "description": "Specify the User-Agent HTTP header that the client library will use when interacting with the API.",
+          "description": "Specify the User-Agent HTTP header the CLI sends to the PDFCrowd API.",
           "flags": [
             "--client-user-agent"
           ],
@@ -15471,46 +14944,6 @@
           "unsupported": {
             "flag": "-client-user-agent",
             "replacement": "--client-user-agent"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
-              "description": "The user agent string.",
-              "name": "agent",
-              "type": "str"
-            }
-          ],
-          "category": {
-            "id": "api-client-options",
-            "name": "API Client Options"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--client-user-agent",
-                "name": "--client-user-agent"
-              }
-            ]
-          },
-          "description": "Set a custom user agent HTTP header. It can be useful if you are behind a proxy or a firewall.",
-          "flags": [
-            "--user-agent"
-          ],
-          "hidden": false,
-          "name": "user-agent",
-          "repeatable": false,
-          "sdk_method": "setUserAgent",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-user-agent",
-            "replacement": "--user-agent"
           },
           "warnings": ""
         },
@@ -15555,7 +14988,7 @@
           },
           "configuration": false,
           "deprecated": null,
-          "description": "Specify an HTTP proxy that the API client library will use to connect to the internet.",
+          "description": "Specify an HTTP proxy the CLI uses to connect to the PDFCrowd API.",
           "flags": [
             "--proxy"
           ],
@@ -15685,7 +15118,8 @@
         }
       ],
       "reference_url": "https://pdfcrowd.com/api/pdf-to-pdf-command-line/ref/",
-      "sdk_class": "PdfToPdfClient"
+      "sdk_class": "PdfToPdfClient",
+      "usage": "pdf2pdf [options] SOURCE [SOURCE ...]"
     },
     "pdf2text": {
       "demo_notice": "Demo output replaces text with DEMO markers.",
@@ -16456,7 +15890,7 @@
             {
               "allowed_values": [],
               "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
+              "default": "pdfcrowd_cli_client/1.1.0 (https://pdfcrowd.com)",
               "description": "The user agent string.",
               "name": "agent",
               "type": "str"
@@ -16468,7 +15902,7 @@
           },
           "configuration": true,
           "deprecated": null,
-          "description": "Specify the User-Agent HTTP header that the client library will use when interacting with the API.",
+          "description": "Specify the User-Agent HTTP header the CLI sends to the PDFCrowd API.",
           "flags": [
             "--client-user-agent"
           ],
@@ -16481,46 +15915,6 @@
           "unsupported": {
             "flag": "-client-user-agent",
             "replacement": "--client-user-agent"
-          },
-          "warnings": ""
-        },
-        {
-          "arguments": [
-            {
-              "allowed_values": [],
-              "constraints": [],
-              "default": "pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)",
-              "description": "The user agent string.",
-              "name": "agent",
-              "type": "str"
-            }
-          ],
-          "category": {
-            "id": "api-client-options",
-            "name": "API Client Options"
-          },
-          "configuration": true,
-          "deprecated": {
-            "replacement": [
-              {
-                "id": "--client-user-agent",
-                "name": "--client-user-agent"
-              }
-            ]
-          },
-          "description": "Set a custom user agent HTTP header. It can be useful if you are behind a proxy or a firewall.",
-          "flags": [
-            "--user-agent"
-          ],
-          "hidden": false,
-          "name": "user-agent",
-          "repeatable": false,
-          "sdk_method": "setUserAgent",
-          "sensitive": false,
-          "text_file": false,
-          "unsupported": {
-            "flag": "-user-agent",
-            "replacement": "--user-agent"
           },
           "warnings": ""
         },
@@ -16565,7 +15959,7 @@
           },
           "configuration": false,
           "deprecated": null,
-          "description": "Specify an HTTP proxy that the API client library will use to connect to the internet.",
+          "description": "Specify an HTTP proxy the CLI uses to connect to the PDFCrowd API.",
           "flags": [
             "--proxy"
           ],
@@ -16695,7 +16089,8 @@
         }
       ],
       "reference_url": "https://pdfcrowd.com/api/pdf-to-text-command-line/ref/",
-      "sdk_class": "PdfToTextClient"
+      "sdk_class": "PdfToTextClient",
+      "usage": "pdf2text [options] SOURCE"
     }
   },
   "exit_codes": {
@@ -16711,7 +16106,7 @@
     "requires_python": "\u003e=3.8",
     "sdk_maximum": "7.1.0",
     "sdk_minimum": "7.0.0",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "schema_version": 1
 }

@@ -86,7 +86,7 @@ def convert(converter, settings, credentials, sources, destination, catalog,
     client = getattr(sdk, converter['sdk_class'])(*credentials)
 
     def perform(output):
-        client.setClientUserAgent('pdfcrowd_cli_client/1.0.0 (https://pdfcrowd.com)')
+        client.setClientUserAgent('pdfcrowd_cli_client/1.1.0 (https://pdfcrowd.com)')
         for method, arguments in calls:
             getattr(client, method)(*arguments)
         bindings = converter['input']

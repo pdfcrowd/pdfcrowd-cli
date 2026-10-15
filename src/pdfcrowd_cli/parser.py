@@ -172,6 +172,12 @@ def option_value(option, value, command):
             raise CLIError(f'Invalid value for --{option["name"]}. '
                            f'Use {expected}. Run {command} help '
                            f'{option["name"]}.') from None
+        if definition.get('choices_only'):
+            choices = [item['value'] for item in definition['allowed_values']]
+            if part not in choices:
+                names = ', '.join(str(choice) for choice in choices)
+                raise CLIError(f'Invalid value for --{option["name"]}. '
+                               f'Use one of: {names}.')
         resolved.append(part)
     return resolved
 
