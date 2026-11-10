@@ -16105,7 +16105,7 @@
     "launcher_owner": "pdfcrowd-cli",
     "requires_python": "\u003e=3.8",
     "sdk_maximum": "7.1.0",
-    "sdk_minimum": "7.0.0",
+    "sdk_minimum": "7.0.1",
     "version": "1.1.0"
   },
   "schema_version": 1
